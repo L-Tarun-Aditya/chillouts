@@ -25,6 +25,15 @@ Decisions locked: prod login Google-only; DEV_MODE_ADMINS=tarunlokesh2005@gmail.
 - [x] Single commit on main → `git@github.com:L-Tarun-Aditya/chillouts.git` — pushed, tracking set
 - [x] Secret-safe push verified by filenames only: .env/node_modules/.next ignored, zero env files staged, SSH untouched/unread
 
+## Phase 4 — Prisma Neon adapter + push 401a3b2 (done 2026-09-26)
+
+- [x] Rewired lib/db.ts to PrismaNeon driver adapter (no Rust engine at runtime — fixes Vercel rhel-openssl crash)
+- [x] Version discipline: adapter auto-resolved to v7 (incompatible) → pinned @prisma/adapter-neon@6.19.3 + serverless 0.10.4; v6 API is `new PrismaNeon({ connectionString })` (config, not Pool instance)
+- [x] Replaced next/dynamic map loader with effect-based ChilloutMapLoader (sidestepped Next16 dynamic() + dual-React-types TS2351 quirk; also fixed Map shadowing native Map)
+- [x] Node engines 22.x (global WebSocket for Neon driver on Vercel functions)
+- [x] Verified on throwaway Neon branch tmp-verify (created, seeded, full matrix green, branch deleted; production never seeded)
+- [x] Pushed 401a3b2. NOTE: adapter works ONLY with Neon — local Docker PG no longer usable as app DB (driver speaks Neon protocol).
+
 ## Phase 3 — Neon project setup (done 2026-09-26)
 
 - [x] neon CLI v6.1.0 via npm -g (PATH note: pnpm shim 2.45.0 shadows it — use full nvm path); logged in as tarunlokesh2005
