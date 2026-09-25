@@ -25,6 +25,13 @@ Decisions locked: prod login Google-only; DEV_MODE_ADMINS=tarunlokesh2005@gmail.
 - [x] Single commit on main → `git@github.com:L-Tarun-Aditya/chillouts.git` — pushed, tracking set
 - [x] Secret-safe push verified by filenames only: .env/node_modules/.next ignored, zero env files staged, SSH untouched/unread
 
+## Phase 5 — rhel engine binaryTargets (done 2026-09-26)
+
+- [x] Vercel still threw engine-not-found on adapter build 398549a (root cause remote-unresolved; adapter verified working locally on Bun + Node 25)
+- [x] Applied defense-in-depth per Google/Prisma guidance: `binaryTargets = ["native", "rhel-openssl-3.0.x"]` in generator; postinstall already present
+- [x] Verified `libquery_engine-rhel-openssl-3.0.x.so.node` downloads into generated client on regenerate; Vercel will fetch it too via postinstall
+- [x] If the adapter path works, engine is never touched; if anything falls back, the binary is now present. Either way the crash class is covered.
+
 ## Phase 4 — Prisma Neon adapter + push 401a3b2 (done 2026-09-26)
 
 - [x] Rewired lib/db.ts to PrismaNeon driver adapter (no Rust engine at runtime — fixes Vercel rhel-openssl crash)
