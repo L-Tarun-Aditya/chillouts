@@ -19,6 +19,12 @@ Stack: Bun 1.3.7, Next.js 16.3.6 App Router TS, Tailwind v4.3.3, shadcn/ui, Post
 
 Decisions locked: prod login Google-only; DEV_MODE_ADMINS=tarunlokesh2005@gmail.com (env, server-enforced); deploy Vercel+Neon; iPhone GPS verified post-deploy (prod HTTPS), Android flag + Dev Mode for local.
 
+## Phase 4 — GitHub push (done 2026-09-26)
+
+- [x] Added `postinstall: prisma generate` (fresh clones/Vercel need it — generated client is gitignored)
+- [x] Single commit on main → `git@github.com:L-Tarun-Aditya/chillouts.git` — pushed, tracking set
+- [x] Secret-safe push verified by filenames only: .env/node_modules/.next ignored, zero env files staged, SSH untouched/unread
+
 ## Phase 3 — Neon project setup (done 2026-09-26)
 
 - [x] neon CLI v6.1.0 via npm -g (PATH note: pnpm shim 2.45.0 shadows it — use full nvm path); logged in as tarunlokesh2005
