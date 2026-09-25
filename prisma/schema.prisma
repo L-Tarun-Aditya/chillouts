@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  name           String
+  avatarColor    String?
+  googleId       String?         @unique
+  image          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  chillouts      Chillout[]
+  participations Participation[]
+  locations      LocationShare[]
+}
+
+model Chillout {
+  id             Int             @id @default(autoincrement())
+  title          String
+  description    String?
+  host           User            @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  hostId         Int
+  locationName   String?
+  latitude       Float?
+  longitude      Float?
+  maxPeople      Int?
+  status         String          @default("ACTIVE")
+  inviteCode     String          @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  participations Participation[]
+  locations      LocationShare[]
+
+  @@index([hostId])
+  @@index([status])
+}
+
+model Participation {
+  id         Int      @id @default(autoincrement())
+  chillout   Chillout @relation(fields: [chilloutId], references: [id], onDelete: Cascade)
+  chilloutId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  status     String   @default("JOINED")
+  joinedAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([chilloutId, userId])
+  @@index([chilloutId])
+  @@index([userId])
+}
+
+model LocationShare {
+  id             Int      @id @default(autoincrement())
+  chillout       Chillout @relation(fields: [chilloutId], references: [id], onDelete: Cascade)
+  chilloutId     Int
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  latitude       Float
+  longitude      Float
+  accuracy       Float?
+  sharingEnabled Boolean  @default(true)
+  // Developer Mode simulation marker. Server-derived only: true solely when
+  // the server permitted a simulated-source write. Never trust client input.
+  isSimulated    Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([chilloutId, userId])
+  @@index([chilloutId])
+  @@index([userId])
+}

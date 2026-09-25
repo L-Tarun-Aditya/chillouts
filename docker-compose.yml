@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chillouts
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # postgres:18+ requires the mount at /var/lib/postgresql (parent dir);
+      # mounting .../data directly makes the 18 image refuse to init.
+      - chillouts_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chillouts"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  chillouts_postgres_data:
