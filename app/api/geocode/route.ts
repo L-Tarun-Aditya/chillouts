@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { canUseDevMode } from "@/lib/dev-mode";
 import { searchPlaces } from "@/lib/geocode";
 
@@ -7,7 +8,7 @@ import { searchPlaces } from "@/lib/geocode";
 // Nominatim policy honored here (throttle + cache in lib/geocode); the client
 // additionally debounces, requires >=3 chars, and offers an explicit Search.
 export async function GET(req: Request) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!canUseDevMode(session?.user?.email)) {
     return NextResponse.json({ error: "Not available" }, { status: 403 });
   }

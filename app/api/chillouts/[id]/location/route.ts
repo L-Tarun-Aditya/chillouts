@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { getChilloutContext, parseChilloutId } from "@/lib/chillout-auth";
@@ -38,7 +39,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // alone never marks a row simulated.
   let isSimulated = false;
   if (parsed.data.source === "simulated") {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     if (!canUseDevMode(session?.user?.email)) {
       return NextResponse.json({ error: "Location simulation is not available" }, { status: 403 });
     }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MapPin, LogOut } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
-import { signOut } from "@/auth";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -19,17 +19,7 @@ export async function SiteHeader() {
             <span className="text-slate-500">
               Signed in as <strong className="font-semibold text-slate-800">{user.name}</strong>
             </span>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <button className="inline-flex items-center gap-2 font-medium text-slate-800 hover:text-brand-primary transition-colors" type="submit">
-                <LogOut className="w-4 h-4" />
-                <span>Sign out</span>
-              </button>
-            </form>
+            <SignOutButton />
           </>
         ) : (
           <Link href="/login" className="font-medium text-slate-800 hover:text-[#ef445f]">

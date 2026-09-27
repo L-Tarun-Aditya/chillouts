@@ -1,22 +1,24 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import { isDevAdminEmail } from "@/lib/dev-mode";
 
 const isDev = process.env.NODE_ENV === "development";
-const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
+export const authOptions: NextAuthOptions = {
+  secret: process.env.AUTH_SECRET,
   providers: [
-    ...(googleConfigured ? [Google] : []),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     // Demo picker for local multi-user testing. Never registered in production.
     ...(isDev
       ? [
-          Credentials({
+          CredentialsProvider({
             credentials: { userId: { label: "User ID" } },
-            authorize: async (credentials) => {
+            async authorize(credentials) {
               if (process.env.NODE_ENV !== "development") return null;
               const id = Number(credentials?.userId);
               if (!Number.isInteger(id)) return null;
@@ -28,24 +30,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ]
       : []),
   ],
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       // First call after sign-in carries user/account/profile.
-      if (account?.provider === "google" && profile && "email" in profile && profile.email) {
+      if (account?.provider === "google" && profile && profile.email) {
         const email = String(profile.email);
-        const googleId = String(profile.sub ?? "");
+        const googleId = String((profile as { sub?: string }).sub ?? "");
         const dbUser = await db.user.upsert({
           where: { email },
           update: {
             googleId: googleId || undefined,
-            image: typeof profile.picture === "string" ? profile.picture : undefined,
+            image: typeof (profile as { picture?: string }).picture === "string"
+              ? (profile as { picture?: string }).picture
+              : undefined,
             name: typeof profile.name === "string" && profile.name ? profile.name : undefined,
           },
           create: {
             email,
             name: typeof profile.name === "string" && profile.name ? profile.name : email,
             googleId: googleId || undefined,
-            image: typeof profile.picture === "string" ? profile.picture : undefined,
+            image: typeof (profile as { picture?: string }).picture === "string"
+              ? (profile as { picture?: string }).picture
+              : undefined,
           },
         });
         token.uid = dbUser.id;
@@ -63,9 +72,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (typeof token.uid === "number") session.user.id = String(token.uid);
-      session.user.isDevAdmin = token.isDevAdmin === true;
+      if (typeof token.uid === "number") {
+        session.user.id = String(token.uid);
+      }
+      (session.user as { isDevAdmin?: boolean }).isDevAdmin = token.isDevAdmin === true;
       return session;
     },
   },
-});
+};
+
+export default NextAuth(authOptions);

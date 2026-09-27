@@ -1,8 +1,9 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { db } from "@/lib/db";
 
 export async function getCurrentUser() {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   const uid = session?.user?.id;
   if (!uid) return null;
   const id = Number(uid);
